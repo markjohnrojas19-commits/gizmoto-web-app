@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Gizmoto — trendy stickers and accessories for students." />
+    <title>Gizmoto — Trendy Student Accessories</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Tailwind CSS (Play CDN, pinned version) + theme extensions -->
+    <script src="https://cdn.tailwindcss.com/3.4.16"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Inter', 'system-ui', 'sans-serif'],
+              display: ['"Space Grotesk"', 'Inter', 'system-ui', 'sans-serif'],
+            },
+          },
+        },
+      };
+    </script>
+    <link rel="stylesheet" href="css/styles.css" />
+  </head>
+
+  <body class="min-h-screen bg-slate-50 font-sans text-slate-800 antialiased">
+    <a href="#products" class="skip-link">Skip to products</a>
+
+    <!-- ── Header: full width, static brand area ── -->
+    <header class="border-b border-violet-100 bg-white">
+      <div class="mx-auto flex max-w-7xl flex-col gap-1 px-4 py-6 sm:px-6 lg:px-8">
+        <h1 class="font-display text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl">
+          Giz<span class="text-violet-600">moto</span>
+        </h1>
+        <p class="text-sm text-slate-500 sm:text-base">
+          Trendy accessories for students — stickers today, keychains &amp; pen spinners next.
+        </p>
+      </div>
+    </header>
+
+    <!--
+      ── Layout: asymmetric 3-column grid (stacks on mobile) ──
+      Each element with an id below is a mount point. js/app.js maps every
+      mount point to a component; the HTML itself contains no dynamic content.
+    -->
+    <main class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <div class="grid grid-cols-1 gap-6 lg:grid-cols-12 lg:gap-8">
+        <!-- Left column: category navigation + admin tools (admins only) -->
+        <div class="space-y-6 lg:col-span-3">
+          <nav id="category-nav" aria-label="Product categories"></nav>
+          <section id="admin-panel" aria-label="Admin panel" hidden></section>
+        </div>
+
+        <!-- Center column: product catalog -->
+        <section id="products" class="lg:col-span-6" aria-labelledby="products-heading"></section>
+
+        <!-- Right sidebar: community suggestions, visually separated -->
+        <aside
+          id="suggestions"
+          class="lg:col-span-3 lg:ml-2 lg:border-l lg:border-slate-200 lg:pl-8"
+          aria-labelledby="suggestions-heading"
+        ></aside>
+      </div>
+    </main>
+
+    <noscript>
+      <p class="mx-auto max-w-7xl px-4 pb-8 text-sm text-rose-600">Gizmoto needs JavaScript enabled to run.</p>
+    </noscript>
+
+    <!-- Application entry point -->
+    <script type="module" src="js/app.js"></script>
+  </body>
+</html>

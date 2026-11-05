@@ -1,0 +1,73 @@
+/*
+ * Custom styles that complement Tailwind utilities.
+ * Keep this file small: prefer Tailwind classes in components, and add rules
+ * here only for things utilities can't express cleanly (animations, a11y helpers).
+ */
+
+/* Accessibility: visible-on-focus skip link */
+.skip-link {
+  position: absolute;
+  left: 1rem;
+  top: -3rem;
+  z-index: 50;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  background: #7c3aed;
+  color: #fff;
+  font-weight: 600;
+  transition: top 0.15s ease;
+}
+
+.skip-link:focus {
+  top: 1rem;
+}
+
+/* Product cards: gentle lift + sticker wiggle on hover */
+.product-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.product-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px -10px rgb(124 58 237 / 0.35);
+}
+
+.product-card:hover .product-emoji {
+  animation: wiggle 0.5s ease-in-out;
+}
+
+@keyframes wiggle {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(-8deg) scale(1.05);
+  }
+  75% {
+    transform: rotate(8deg) scale(1.05);
+  }
+}
+
+/* Tactile press feedback for buttons */
+.btn-press:active {
+  transform: scale(0.95);
+}
+
+/* Hide scrollbars on the horizontally scrolling mobile category bar */
+.scrollbar-none {
+  scrollbar-width: none;
+}
+
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
