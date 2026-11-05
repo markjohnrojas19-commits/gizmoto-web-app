@@ -69,7 +69,7 @@ function suggestionItem(suggestion, index) {
     <li class="flex items-center gap-3 rounded-xl border px-3 py-2 ${isLeader ? 'border-amber-200 bg-amber-50' : 'border-slate-100 bg-slate-50'}">
       <span class="w-5 shrink-0 text-center font-display text-sm font-bold ${isLeader ? 'text-amber-500' : 'text-slate-400'}" aria-hidden="true">${index + 1}</span>
       <div class="min-w-0 flex-1">
-        <p class="truncate text-sm font-medium text-slate-900" title="${name}">${name}</p>
+        <p class="break-words text-sm font-medium leading-snug text-slate-900">${name}</p>
         <p class="text-xs text-slate-500">${suggestion.votes} ${voteLabel}${isLeader ? ' · 🔥 Leading' : ''}</p>
       </div>
       <button
