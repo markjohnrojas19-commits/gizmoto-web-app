@@ -8,12 +8,12 @@
  * - Selectors (`select*`) derive view data (filtering, sorting) without
  *   storing duplicates in state.
  *
- * SCALING: to launch a new product line, add one entry to CATEGORIES.
- * The nav, product cards, and admin form all read from this list.
+ * SCALING: categories live in state, so admins can add or remove product
+ * lines at runtime. DEFAULT_CATEGORIES is only the starting set.
  */
 
-/** Product categories. `id` is stored on each product's `category` field. */
-export const CATEGORIES = Object.freeze([
+/** Starting product categories. `id` is stored on each product's `category` field. */
+export const DEFAULT_CATEGORIES = Object.freeze([
   Object.freeze({ id: 'sticker', label: 'Stickers', emoji: '✨' }),
   Object.freeze({ id: 'keychain', label: 'Keychains', emoji: '🔑' }),
   Object.freeze({ id: 'pen-spinner', label: 'Pen Spinners', emoji: '🖊️' }),
@@ -25,15 +25,19 @@ export const ALL_CATEGORIES = 'all';
 /**
  * State shape:
  * - isAdmin:        boolean flag that unlocks the admin panel
- * - activeCategory: ALL_CATEGORIES or a CATEGORIES id
+ * - activeCategory: ALL_CATEGORIES or a category id
+ * - categories:     Array<{ id, label, emoji }>
  * - products:       Array<{ id, name, category, isAvailable }>
  * - suggestions:    Array<{ id, name, votes, createdAt }>
+ * - votedIds:       suggestion ids this visitor has voted for (one vote each)
  */
 let state = Object.freeze({
   isAdmin: false,
   activeCategory: ALL_CATEGORIES,
+  categories: DEFAULT_CATEGORIES,
   products: [],
   suggestions: [],
+  votedIds: [],
 });
 
 const listeners = new Set();
@@ -55,8 +59,8 @@ export function subscribe(listener) {
 
 // ── Selectors ────────────────────────────────────────────────────────────
 
-export function getCategory(categoryId) {
-  return CATEGORIES.find((category) => category.id === categoryId);
+export function getCategory(categories, categoryId) {
+  return categories.find((category) => category.id === categoryId);
 }
 
 /** Products in the active category, in-stock items first. */

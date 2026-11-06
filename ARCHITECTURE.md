@@ -48,7 +48,7 @@ Gizmoto follows a **Component-Driven State Architecture** with strict **Separati
     ├── app.js                  # Application bootstrapper & coordinator
     ├── state.js                # Single source of truth (data models, selectors)
     ├── services/
-    │   └── dataService.js      # State mutations (add, remove, suggest, vote) + persistence
+    │   └── dataService.js      # State mutations (products, categories, suggest, vote) + persistence
     ├── components/             # Pure UI modules
     │   ├── categoryNav.js      # Left column: category browser
     │   ├── productList.js      # Center: product availability feed
@@ -67,21 +67,20 @@ Gizmoto follows a **Component-Driven State Architecture** with strict **Separati
 // Suggestion
 { id: 's-pen-spinner-v2', name: 'Pen Spinner V2', votes: 12, createdAt: 1 }
 
+// Category
+{ id: 'sticker', label: 'Stickers', emoji: '✨' }
+
 // Global state
-{ isAdmin: false, activeCategory: 'all', products: [...], suggestions: [...] }
+{ isAdmin: false, activeCategory: 'all', categories: [...], products: [...], suggestions: [...], votedIds: [...] }
 ```
 
 ## 🧩 Extending Gizmoto
 
-### Add a new product category
+### Add or remove a product category
 
-1. Add one entry to `CATEGORIES` in `js/state.js`:
-   ```js
-   Object.freeze({ id: 'phone-charm', label: 'Phone Charms', emoji: '📱' }),
-   ```
-2. *(Optional)* Add a card gradient to `CATEGORY_THEMES` in `js/components/productList.js`.
+Categories live in state, so admins manage them from the app itself: open it with `?admin=true` and use the **Add** form and **✕** buttons in the Browse list. A category that still holds items can't be removed until its items are removed.
 
-The nav, product cards, admin form, and validation all pick it up automatically.
+To change the categories a brand-new store starts with, edit `DEFAULT_CATEGORIES` in `js/state.js`. *(Optional)* Give a category its own card gradient in `CATEGORY_THEMES` in `js/components/productList.js`; others use a neutral default.
 
 ### Add a new feature / component
 

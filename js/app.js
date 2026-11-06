@@ -35,8 +35,11 @@ const COMPONENTS = [
 /** UI events → service actions. Each returns { ok, message } | { ok, error }. */
 const HANDLERS = {
   onSelectCategory: dataService.setActiveCategory,
+  onAddCategory: dataService.addCategory,
+  onRemoveCategory: dataService.removeCategory,
   onSuggest: dataService.addSuggestion,
   onVote: dataService.voteForSuggestion,
+  onRemoveSuggestion: dataService.removeSuggestion,
   onAddProduct: dataService.addProduct,
   onRemoveProduct: dataService.removeProduct,
 };

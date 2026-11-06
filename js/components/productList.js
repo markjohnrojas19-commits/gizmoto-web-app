@@ -17,7 +17,7 @@ export function renderProductList(root, state) {
   const products = selectVisibleProducts(state);
   const inStock = products.filter((product) => product.isAvailable).length;
   const title =
-    state.activeCategory === ALL_CATEGORIES ? 'All items' : getCategory(state.activeCategory)?.label ?? 'Items';
+    state.activeCategory === ALL_CATEGORIES ? 'All items' : getCategory(state.categories, state.activeCategory)?.label ?? 'Items';
 
   root.innerHTML = `
     <div class="mb-5 flex items-end justify-between gap-4">
@@ -27,16 +27,16 @@ export function renderProductList(root, state) {
       </div>
       <p class="text-sm text-slate-500">${inStock} of ${products.length} in stock</p>
     </div>
-    ${products.length ? productGrid(products) : emptyState()}
+    ${products.length ? productGrid(products, state.categories) : emptyState()}
   `;
 }
 
-function productGrid(products) {
-  return `<ul class="grid grid-cols-1 gap-4 sm:grid-cols-2">${products.map(productCard).join('')}</ul>`;
+function productGrid(products, categories) {
+  return `<ul class="grid grid-cols-1 gap-4 sm:grid-cols-2">${products.map((product) => productCard(product, categories)).join('')}</ul>`;
 }
 
-function productCard(product) {
-  const category = getCategory(product.category);
+function productCard(product, categories) {
+  const category = getCategory(categories, product.category);
   const theme = CATEGORY_THEMES[product.category] ?? DEFAULT_THEME;
 
   return `

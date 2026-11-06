@@ -5,7 +5,6 @@
  * re-checks the flag too, so actions are refused even if called directly.
  */
 
-import { CATEGORIES } from '../state.js';
 import { escapeHtml, showStatus } from '../utils/dom.js';
 
 export function mountAdminPanel(root, { onAddProduct, onRemoveProduct }) {
@@ -34,7 +33,7 @@ export function mountAdminPanel(root, { onAddProduct, onRemoveProduct }) {
   });
 }
 
-export function renderAdminPanel(root, { isAdmin, products }) {
+export function renderAdminPanel(root, { isAdmin, categories, products }) {
   root.hidden = !isAdmin;
   if (!isAdmin) {
     root.innerHTML = '';
@@ -43,6 +42,8 @@ export function renderAdminPanel(root, { isAdmin, products }) {
 
   // Build the form shell once so in-progress input isn't wiped on re-render.
   if (!root.querySelector('[data-role="inventory"]')) root.innerHTML = panelShell();
+
+  renderCategoryOptions(root.querySelector('[data-role="category-select"]'), categories);
 
   root.querySelector('[data-role="inventory"]').innerHTML = products.length
     ? products.map(inventoryRow).join('')
@@ -68,9 +69,7 @@ function panelShell() {
         </div>
         <div>
           <label for="admin-product-category" class="mb-1 block text-xs font-medium text-slate-600">Category</label>
-          <select id="admin-product-category" name="productCategory" class="${inputClasses}">
-            ${CATEGORIES.map((category) => `<option value="${escapeHtml(category.id)}">${escapeHtml(category.label)}</option>`).join('')}
-          </select>
+          <select id="admin-product-category" name="productCategory" data-role="category-select" class="${inputClasses}"></select>
         </div>
         <label class="flex items-center gap-2 text-sm text-slate-700">
           <input name="productAvailable" type="checkbox" checked class="h-4 w-4 rounded border-slate-300 accent-violet-600" />
@@ -87,6 +86,17 @@ function panelShell() {
       <ul data-role="inventory" class="mt-2 max-h-72 divide-y divide-amber-100 overflow-y-auto"></ul>
     </div>
   `;
+}
+
+/** Refreshes the category dropdown, keeping the current choice when it still exists. */
+function renderCategoryOptions(select, categories) {
+  const selected = select.value;
+  select.innerHTML = categories.length
+    ? categories
+        .map((category) => `<option value="${escapeHtml(category.id)}">${escapeHtml(category.label)}</option>`)
+        .join('')
+    : '<option value="">Add a category first</option>';
+  if (categories.some((category) => category.id === selected)) select.value = selected;
 }
 
 function inventoryRow(product) {

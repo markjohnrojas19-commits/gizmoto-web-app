@@ -6,7 +6,7 @@ Every milestone has a **Double-Check Verification Rule**. A milestone is only ch
 
 - [x] **Milestone 0: Branding & Context Initialization**
   - Defined the Gizmoto brand, tagline, and student-focused market.
-  - 🔍 **Double-Check Verification Rule:** Confirm the brand strategy accounts for expansion past stickers (keychains, pen spinners), as reflected in the `CATEGORIES` config.
+  - 🔍 **Double-Check Verification Rule:** Confirm the brand strategy accounts for expansion past stickers (keychains, pen spinners), as reflected in the `DEFAULT_CATEGORIES` config and admin-editable categories.
 
 - [x] **Milestone 0.5: Codebase Repository Synchronization**
   - Initialized the Git repository with the structured directory system and pushed it to GitHub.

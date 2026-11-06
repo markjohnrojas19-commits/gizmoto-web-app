@@ -3,12 +3,14 @@
  *
  * The form is mounted once so typed text survives re-renders;
  * only the ranked list is re-rendered on state changes.
+ * Each visitor gets one vote per suggestion (click again to undo);
+ * admins also get a remove button per suggestion.
  */
 
 import { selectRankedSuggestions } from '../state.js';
 import { escapeHtml, showStatus } from '../utils/dom.js';
 
-export function mountSuggestionSidebar(root, { onSuggest, onVote }) {
+export function mountSuggestionSidebar(root, { onSuggest, onVote, onRemoveSuggestion }) {
   root.innerHTML = `
     <div class="rounded-2xl border border-violet-100 bg-white p-5 shadow-sm">
       <h2 id="suggestions-heading" class="font-display text-lg font-bold text-slate-900">Community picks</h2>
@@ -47,6 +49,12 @@ export function mountSuggestionSidebar(root, { onSuggest, onVote }) {
   });
 
   root.addEventListener('click', (event) => {
+    const removeButton = event.target.closest('[data-remove-suggestion]');
+    if (removeButton) {
+      showStatus(status, onRemoveSuggestion(removeButton.dataset.removeSuggestion));
+      return;
+    }
+
     const button = event.target.closest('[data-vote-id]');
     if (button) showStatus(status, onVote(button.dataset.voteId));
   });
@@ -54,31 +62,51 @@ export function mountSuggestionSidebar(root, { onSuggest, onVote }) {
 
 export function renderSuggestionSidebar(root, state) {
   const suggestions = selectRankedSuggestions(state);
+  const { votedIds, isAdmin } = state;
   root.querySelector('[data-role="list"]').innerHTML = suggestions.length
-    ? suggestions.map(suggestionItem).join('')
+    ? suggestions.map((suggestion, index) => suggestionItem(suggestion, index, votedIds.includes(suggestion.id), isAdmin)).join('')
     : '<li class="rounded-xl bg-slate-50 px-3 py-4 text-center text-sm text-slate-500">No suggestions yet — be the first!</li>';
 }
 
-function suggestionItem(suggestion, index) {
+function suggestionItem(suggestion, index, hasVoted, isAdmin) {
   const isLeader = index === 0 && suggestion.votes > 0;
   const name = escapeHtml(suggestion.name);
   const id = escapeHtml(suggestion.id);
   const voteLabel = suggestion.votes === 1 ? 'vote' : 'votes';
 
   return `
-    <li class="flex items-center gap-3 rounded-xl border px-3 py-2 ${isLeader ? 'border-amber-200 bg-amber-50' : 'border-slate-100 bg-slate-50'}">
-      <span class="w-5 shrink-0 text-center font-display text-sm font-bold ${isLeader ? 'text-amber-500' : 'text-slate-400'}" aria-hidden="true">${index + 1}</span>
+    <li class="flex gap-3 rounded-xl border px-3 py-2 ${isLeader ? 'border-amber-200 bg-amber-50' : 'border-slate-100 bg-slate-50'}">
+      <span class="w-5 shrink-0 pt-0.5 text-center font-display text-sm font-bold ${isLeader ? 'text-amber-500' : 'text-slate-400'}" aria-hidden="true">${index + 1}</span>
       <div class="min-w-0 flex-1">
+        <!-- Name gets the full row width; buttons sit on the row below so they can't squeeze it. -->
         <p class="break-words text-sm font-medium leading-snug text-slate-900">${name}</p>
-        <p class="text-xs text-slate-500">${suggestion.votes} ${voteLabel}${isLeader ? ' · 🔥 Leading' : ''}</p>
+        <div class="mt-1.5 flex flex-wrap items-center gap-2">
+          <p class="mr-auto text-xs text-slate-500">${suggestion.votes} ${voteLabel}${isLeader ? ' · 🔥 Leading' : ''}</p>
+          <div class="flex shrink-0 items-center gap-1">
+            <button
+              type="button"
+              data-vote-id="${id}"
+              data-focus-key="vote-${id}"
+              aria-pressed="${hasVoted}"
+              aria-label="${hasVoted ? 'Remove your vote for' : 'Vote for'} ${name} (${suggestion.votes} ${voteLabel})"
+              title="${hasVoted ? 'Click to remove your vote' : 'Vote'}"
+              class="btn-press shrink-0 rounded-lg border px-3 py-1.5 text-xs font-semibold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-400 ${hasVoted ? 'border-violet-600 bg-violet-600 text-white hover:bg-violet-700' : 'border-violet-200 bg-white text-violet-700 hover:border-violet-600 hover:bg-violet-600 hover:text-white'}"
+            >${hasVoted ? '✓ Voted' : '▲ Vote'}</button>
+            ${isAdmin ? removeButton(id, name) : ''}
+          </div>
+        </div>
       </div>
-      <button
-        type="button"
-        data-vote-id="${id}"
-        data-focus-key="vote-${id}"
-        aria-label="Vote for ${name} (${suggestion.votes} ${voteLabel})"
-        class="btn-press shrink-0 rounded-lg border border-violet-200 bg-white px-3 py-1.5 text-xs font-semibold text-violet-700 transition hover:border-violet-600 hover:bg-violet-600 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-400"
-      >▲ Vote</button>
     </li>
+  `;
+}
+
+/** `id` and `name` arrive already escaped. */
+function removeButton(id, name) {
+  return `
+    <button type="button" data-remove-suggestion="${id}" data-focus-key="remove-suggestion-${id}"
+      aria-label="Remove suggestion ${name}" title="Remove suggestion"
+      class="btn-press shrink-0 rounded-lg px-2 py-1 text-sm font-semibold text-rose-600 transition hover:bg-rose-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-300">
+      ✕
+    </button>
   `;
 }
