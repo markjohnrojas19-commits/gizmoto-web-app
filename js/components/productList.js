@@ -65,7 +65,7 @@ function emptyState() {
   return `
     <div class="rounded-2xl border-2 border-dashed border-slate-200 bg-white px-6 py-14 text-center">
       <p class="text-4xl" aria-hidden="true">📦</p>
-      <p class="mt-3 font-medium text-slate-700">Nothing here yet</p>
+      <p class="mt-3 font-medium text-slate-700">No items available</p>
       <p class="mt-1 text-sm text-slate-500">This collection is coming soon — vote for what you want in the sidebar!</p>
     </div>
   `;

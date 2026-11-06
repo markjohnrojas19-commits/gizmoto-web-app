@@ -52,7 +52,7 @@ Then open:
 
 > ⚠️ The `?admin=true` flag is a **client-side demo switch, not security**. Real access control must be enforced by a server before production.
 
-To reset to the seed data, run `localStorage.removeItem('gizmoto:data:v1')` in the browser console and reload.
+To reset to an empty catalog, run `localStorage.removeItem('gizmoto:data:v2')` in the browser console and reload.
 
 ---
 

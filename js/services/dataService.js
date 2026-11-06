@@ -13,24 +13,14 @@
 
 import { ALL_CATEGORIES, CATEGORIES, getState, setState } from '../state.js';
 
-const STORAGE_KEY = 'gizmoto:data:v1';
+// v2: starts from an empty catalog, so data saved under the old v1 mock seed is not loaded.
+const STORAGE_KEY = 'gizmoto:data:v2';
 const MAX_NAME_LENGTH = 40;
 
-/** Starter catalog used on first visit (or if stored data is unreadable). */
+/** Starting data used on first visit (or if stored data is unreadable): a blank canvas. */
 const SEED_DATA = Object.freeze({
-  products: [
-    { id: 'p-holo-cat', name: 'Holo Cat', category: 'sticker', isAvailable: true },
-    { id: 'p-coffee-calculus', name: 'Coffee Before Calculus', category: 'sticker', isAvailable: true },
-    { id: 'p-pixel-heart', name: 'Pixel Heart', category: 'sticker', isAvailable: true },
-    { id: 'p-late-night-coder', name: 'Late Night Coder', category: 'sticker', isAvailable: true },
-    { id: 'p-study-frog', name: 'Study Buddy Frog', category: 'sticker', isAvailable: true },
-    { id: 'p-retro-cassette', name: 'Retro Cassette', category: 'sticker', isAvailable: false },
-  ],
-  suggestions: [
-    { id: 's-pen-spinner-v2', name: 'Pen Spinner V2', votes: 12, createdAt: 1 },
-    { id: 's-glow-keychain', name: 'Glow-in-the-dark Keychain', votes: 8, createdAt: 2 },
-    { id: 's-planner-stickers', name: 'Mini Planner Stickers', votes: 5, createdAt: 3 },
-  ],
+  products: [],
+  suggestions: [],
 });
 
 // ── Storage adapter (simulated backend) ──────────────────────────────────
@@ -90,7 +80,7 @@ function commit(patch) {
 
 // ── Public actions ───────────────────────────────────────────────────────
 
-/** Loads persisted data (or the seed catalog) into state. Called once by app.js. */
+/** Loads persisted data (or the empty seed) into state. Called once by app.js. */
 export function initData({ isAdmin = false } = {}) {
   const { products, suggestions } = storage.load() ?? SEED_DATA;
   setState({ products, suggestions, isAdmin });
