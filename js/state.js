@@ -19,6 +19,9 @@ export const DEFAULT_CATEGORIES = Object.freeze([
   Object.freeze({ id: 'pen-spinner', label: 'Pen Spinners', emoji: '🖊️' }),
 ]);
 
+/** Most photos one product can have. Uploaded photos are stored in the browser, so keep this small. */
+export const MAX_PRODUCT_IMAGES = 5;
+
 /** Special filter value meaning "show every category". */
 export const ALL_CATEGORIES = 'all';
 
@@ -27,7 +30,8 @@ export const ALL_CATEGORIES = 'all';
  * - isAdmin:        boolean flag that unlocks the admin panel
  * - activeCategory: ALL_CATEGORIES or a category id
  * - categories:     Array<{ id, label, emoji }>
- * - products:       Array<{ id, name, category, isAvailable }>
+ * - products:       Array<{ id, name, category, isAvailable, images }>
+ *                   (images: up to MAX_PRODUCT_IMAGES sources, data: URLs or http(s) links; first is the cover)
  * - suggestions:    Array<{ id, name, votes, createdAt }>
  * - votedIds:       suggestion ids this visitor has voted for (one vote each)
  */

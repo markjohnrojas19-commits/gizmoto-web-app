@@ -71,3 +71,16 @@
     transition: none !important;
   }
 }
+
+/* Admin photo overlay on product cards: touch screens can't hover, so keep the
+   controls visible there (without darkening the photo). */
+@media (hover: none) {
+  .admin-photo-overlay {
+    opacity: 1;
+    background: transparent;
+  }
+
+  .admin-photo-control {
+    opacity: 1;
+  }
+}

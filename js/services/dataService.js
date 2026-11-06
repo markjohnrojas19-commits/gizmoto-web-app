@@ -11,7 +11,7 @@
  * state.js stay unchanged.
  */
 
-import { ALL_CATEGORIES, DEFAULT_CATEGORIES, getState, setState } from '../state.js';
+import { ALL_CATEGORIES, DEFAULT_CATEGORIES, MAX_PRODUCT_IMAGES, getState, setState } from '../state.js';
 
 // v2: starts from an empty catalog, so data saved under the old v1 mock seed is not loaded.
 const STORAGE_KEY = 'gizmoto:data:v2';
@@ -19,6 +19,9 @@ const STORAGE_KEY = 'gizmoto:data:v2';
 const VOTES_KEY = 'gizmoto:votes:v1';
 const MAX_NAME_LENGTH = 40;
 const NEW_CATEGORY_EMOJI = '🏷️';
+// Uploaded photos are resized before they get here (see utils/images.js); this only stops runaway sizes.
+const MAX_IMAGE_SRC_LENGTH = 2_000_000;
+const STORAGE_FULL_ERROR = 'Not enough browser storage for these photos. Remove some photos or use image links instead.';
 
 /** Starting data used on first visit (or if stored data is unreadable): a blank canvas. */
 const SEED_DATA = Object.freeze({
@@ -40,11 +43,14 @@ const storage = {
       return null;
     }
   },
+  /** Returns false when the data couldn't be saved (storage unavailable or full). */
   save(data) {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      return true;
     } catch {
       // Storage unavailable (private mode, quota): the app keeps working in memory.
+      return false;
     }
   },
 };
@@ -100,13 +106,47 @@ function requireAdmin() {
   return getState().isAdmin ? null : failure('Only admins can manage the catalog.');
 }
 
+/** Accepts uploaded photos (data:image/…) and http(s) links; anything else (e.g. javascript:) is refused. */
+function isValidImageSrc(src) {
+  if (typeof src !== 'string' || src.length > MAX_IMAGE_SRC_LENGTH) return false;
+  if (src.startsWith('data:image/')) return true;
+  try {
+    return ['http:', 'https:'].includes(new URL(src).protocol);
+  } catch {
+    return false;
+  }
+}
+
+function validateImages(images, existingCount = 0) {
+  if (!Array.isArray(images) || !images.every(isValidImageSrc)) return "One of those photos isn't a valid image.";
+  if (existingCount + images.length > MAX_PRODUCT_IMAGES) return `Each item can have up to ${MAX_PRODUCT_IMAGES} photos.`;
+  return null;
+}
+
+const plural = (count, word) => `${count} ${word}${count === 1 ? '' : 's'}`;
+
 const isKnownCategory = (categoryId) => getState().categories.some((category) => category.id === categoryId);
 
-/** Commits changes to persisted collections (categories/products/suggestions) and saves them. */
+/**
+ * Commits changes to persisted collections (categories/products/suggestions) and saves them.
+ * Returns false when saving failed; the change still applies in memory.
+ */
 function commit(patch) {
   setState(patch);
   const { categories, products, suggestions } = getState();
-  storage.save({ categories, products, suggestions });
+  return storage.save({ categories, products, suggestions });
+}
+
+/**
+ * Like commit() for product changes, but undoes the change when it can't be saved.
+ * Used for photos, which can fill browser storage: keeping them only in memory
+ * would silently lose them on reload.
+ */
+function commitProductsOrRollback(products) {
+  const previous = getState().products;
+  if (commit({ products })) return true;
+  setState({ products: previous });
+  return false;
 }
 
 /** Commits this visitor's voted ids and saves them. */
@@ -126,7 +166,13 @@ function adjustVotes(suggestions, suggestionId, delta) {
 
 /** Loads persisted data (or the empty seed) into state. Called once by app.js. */
 export function initData({ isAdmin = false } = {}) {
-  const { categories, products, suggestions } = storage.load() ?? SEED_DATA;
+  const stored = storage.load() ?? SEED_DATA;
+  const { categories, suggestions } = stored;
+  // Products saved before photos existed have no `images`.
+  const products = stored.products.map((product) => ({
+    ...product,
+    images: Array.isArray(product.images) ? product.images.filter(isValidImageSrc) : [],
+  }));
   // Drop votes for suggestions that no longer exist.
   const votedIds = voteStorage.load().filter((id) => suggestions.some((suggestion) => suggestion.id === id));
   setState({ categories, products, suggestions, votedIds, isAdmin });
@@ -139,8 +185,8 @@ export function setActiveCategory(categoryId) {
   return success();
 }
 
-/** Admin only: adds an item to the catalog. */
-export function addProduct({ name, category, isAvailable = true }) {
+/** Admin only: adds an item to the catalog, with up to MAX_PRODUCT_IMAGES photos. */
+export function addProduct({ name, category, isAvailable = true, images = [] }) {
   const denied = requireAdmin();
   if (denied) return denied;
 
@@ -148,15 +194,50 @@ export function addProduct({ name, category, isAvailable = true }) {
   const nameError = validateName(cleanName, 'product name');
   if (nameError) return failure(nameError);
   if (!isKnownCategory(category)) return failure('Please choose a valid category.');
+  const imageError = validateImages(images);
+  if (imageError) return failure(imageError);
 
   const { products } = getState();
   if (products.some((product) => product.category === category && isSameName(product.name, cleanName))) {
     return failure(`"${cleanName}" is already in the catalog.`);
   }
 
-  const product = { id: createId('p'), name: cleanName, category, isAvailable: Boolean(isAvailable) };
-  commit({ products: [...products, product] });
-  return success(`Added "${cleanName}".`);
+  const product = { id: createId('p'), name: cleanName, category, isAvailable: Boolean(isAvailable), images: [...images] };
+  if (!commitProductsOrRollback([...products, product])) return failure(STORAGE_FULL_ERROR);
+  return success(images.length ? `Added "${cleanName}" with ${plural(images.length, 'photo')}.` : `Added "${cleanName}".`);
+}
+
+/** Admin only: appends photos to an existing item. */
+export function addProductImages(productId, images) {
+  const denied = requireAdmin();
+  if (denied) return denied;
+
+  const { products } = getState();
+  const target = products.find((product) => product.id === productId);
+  if (!target) return failure('That item no longer exists.');
+  if (!images?.length) return failure('Choose at least one photo.');
+  const imageError = validateImages(images, target.images.length);
+  if (imageError) return failure(imageError);
+
+  const updated = { ...target, images: [...target.images, ...images] };
+  if (!commitProductsOrRollback(products.map((product) => (product.id === productId ? updated : product)))) {
+    return failure(STORAGE_FULL_ERROR);
+  }
+  return success(`Added ${plural(images.length, 'photo')} to "${target.name}".`);
+}
+
+/** Admin only: removes one photo (by position) from an item. */
+export function removeProductImage(productId, index) {
+  const denied = requireAdmin();
+  if (denied) return denied;
+
+  const { products } = getState();
+  const target = products.find((product) => product.id === productId);
+  if (!target?.images[index]) return failure('That photo no longer exists.');
+
+  const updated = { ...target, images: target.images.filter((_, i) => i !== index) };
+  commit({ products: products.map((product) => (product.id === productId ? updated : product)) });
+  return success(`Removed a photo from "${target.name}".`);
 }
 
 /** Admin only: removes an item from the catalog. */

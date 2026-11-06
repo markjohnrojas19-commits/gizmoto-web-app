@@ -62,7 +62,8 @@ Gizmoto follows a **Component-Driven State Architecture** with strict **Separati
 
 ```js
 // Product
-{ id: 'p-holo-cat', name: 'Holo Cat', category: 'sticker', isAvailable: true }
+// images: up to MAX_PRODUCT_IMAGES (5) uploaded data: URLs or http(s) links; the first is the cover
+{ id: 'p-holo-cat', name: 'Holo Cat', category: 'sticker', isAvailable: true, images: ['data:image/webp;base64,…'] }
 
 // Suggestion
 { id: 's-pen-spinner-v2', name: 'Pen Spinner V2', votes: 12, createdAt: 1 }

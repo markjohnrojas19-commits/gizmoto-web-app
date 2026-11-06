@@ -20,7 +20,7 @@
 import { getState, subscribe } from './state.js';
 import * as dataService from './services/dataService.js';
 import { mountCategoryNav, renderCategoryNav } from './components/categoryNav.js';
-import { renderProductList } from './components/productList.js';
+import { mountProductList, renderProductList } from './components/productList.js';
 import { mountSuggestionSidebar, renderSuggestionSidebar } from './components/suggestionSidebar.js';
 import { mountAdminPanel, renderAdminPanel } from './components/adminPanel.js';
 
@@ -28,7 +28,7 @@ import { mountAdminPanel, renderAdminPanel } from './components/adminPanel.js';
 const COMPONENTS = [
   { selector: '#category-nav', mount: mountCategoryNav, render: renderCategoryNav },
   { selector: '#admin-panel', mount: mountAdminPanel, render: renderAdminPanel },
-  { selector: '#products', render: renderProductList },
+  { selector: '#products', mount: mountProductList, render: renderProductList },
   { selector: '#suggestions', mount: mountSuggestionSidebar, render: renderSuggestionSidebar },
 ];
 
@@ -42,6 +42,8 @@ const HANDLERS = {
   onRemoveSuggestion: dataService.removeSuggestion,
   onAddProduct: dataService.addProduct,
   onRemoveProduct: dataService.removeProduct,
+  onAddProductImages: dataService.addProductImages,
+  onRemoveProductImage: dataService.removeProductImage,
 };
 
 let mountedComponents = [];

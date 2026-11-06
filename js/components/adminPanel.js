@@ -3,6 +3,8 @@
  *
  * Renders nothing unless `state.isAdmin` is true. The service layer
  * re-checks the flag too, so actions are refused even if called directly.
+ *
+ * Photos are managed on the product cards themselves (see productList.js).
  */
 
 import { escapeHtml, showStatus } from '../utils/dom.js';
@@ -81,8 +83,9 @@ function panelShell() {
         </button>
       </form>
       <p data-role="status" class="mt-2 min-h-[1.25rem] text-sm" role="status" aria-live="polite"></p>
+      <p class="text-xs text-slate-500">📷 To add photos, hover an item's picture in the shop and click <strong>+</strong>.</p>
 
-      <h3 class="mt-2 text-xs font-semibold uppercase tracking-wider text-slate-500">Current items</h3>
+      <h3 class="mt-3 text-xs font-semibold uppercase tracking-wider text-slate-500">Current items</h3>
       <ul data-role="inventory" class="mt-2 max-h-72 divide-y divide-amber-100 overflow-y-auto"></ul>
     </div>
   `;
@@ -101,9 +104,15 @@ function renderCategoryOptions(select, categories) {
 
 function inventoryRow(product) {
   const name = escapeHtml(product.name);
+  const cover = product.images[0];
   return `
-    <li class="flex items-center justify-between gap-2 py-2">
-      <span class="min-w-0 truncate text-sm text-slate-700" title="${name}">${name}</span>
+    <li class="flex items-center gap-2 py-2">
+      ${
+        cover
+          ? `<img src="${escapeHtml(cover)}" alt="" class="h-8 w-8 shrink-0 rounded-md border border-amber-100 object-cover" />`
+          : '<span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-white text-xs text-slate-300" aria-hidden="true">📷</span>'
+      }
+      <span class="min-w-0 flex-1 truncate text-sm text-slate-700" title="${name}">${name}</span>
       <button type="button" data-remove-id="${escapeHtml(product.id)}" aria-label="Remove ${name}"
         class="btn-press shrink-0 rounded-lg px-2 py-1 text-xs font-semibold text-rose-600 transition hover:bg-rose-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-300">
         Remove Item
