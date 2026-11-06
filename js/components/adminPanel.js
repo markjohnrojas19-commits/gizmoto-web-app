@@ -83,9 +83,7 @@ function panelShell() {
         </button>
       </form>
       <p data-role="status" class="mt-2 min-h-[1.25rem] text-sm" role="status" aria-live="polite"></p>
-      <p class="text-xs text-slate-500">📷 To add photos, hover an item's picture in the shop and click <strong>+</strong>.</p>
-
-      <h3 class="mt-3 text-xs font-semibold uppercase tracking-wider text-slate-500">Current items</h3>
+      <h3 class="mt-2 text-xs font-semibold uppercase tracking-wider text-slate-500">Current items</h3>
       <ul data-role="inventory" class="mt-2 max-h-72 divide-y divide-amber-100 overflow-y-auto"></ul>
     </div>
   `;
